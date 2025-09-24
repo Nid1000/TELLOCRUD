@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Detalle del Producto</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Iconos para estrellas -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      background: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .btn-volver {
+      transition: all 0.3s ease;
+      border-radius: 8px;
+    }
+    .btn-volver:hover {
+      background-color: #6c757d;
+      color: #fff;
+      transform: scale(1.05);
+    }
+
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .card-body h3 {
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+
+    .card-body p {
+      color: #555;
+      margin-bottom: 1rem;
+    }
+
+    .price-tag {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #198754;
+      margin-top: 0.5rem;
+    }
+
+    .stars {
+      font-size: 1.5rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .stars i {
+      color: #ccc;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .stars i.active {
+      color: #ffc107;
+    }
+
+    /* Carrusel */
+    .carousel-inner img {
+      border-right: 1px solid #e9ecef;
+      height: 400px;
+      object-fit: cover;
+      border-radius: 15px 0 0 15px;
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+      background-color: rgba(0,0,0,0.5);
+      border-radius: 50%;
+      padding: 10px;
+    }
+
+    @media (max-width: 767px) {
+      .carousel-inner img {
+        border-radius: 15px 15px 0 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container my-5">
+    <a href="index.html" class="btn btn-outline-secondary btn-volver mb-4">
+      ⬅ Volver
+    </a>
+    <div id="detalle-producto">
+      <!-- Aquí se cargará el detalle del producto -->
+    </div>
+    <!-- 🔹 Localización y Ubicación -->
+<footer class="bg-dark text-light mt-5">
+  <div class="container py-4">
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <h5 class="mb-3">Ubicación de la Tienda</h5>
+        <!-- Google Maps embebido -->
+        <div class="ratio ratio-16x9">
+          <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.5437631772567!2d-77.03687158478994!3d-12.04637309146362!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c8bbdb312fd7%3A0x31e6bdf58e7b8c1b!2sPlaza%20de%20Armas%20de%20Lima!5e0!3m2!1ses!2spe!4v1695820123456!5m2!1ses!2spe" 
+            style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+      </div>
+      <div class="col-md-6 mb-3">
+        <h5 class="mb-3">Información de Contacto</h5>
+        <p><i class="bi bi-geo-alt"></i> Dirección: Av.123, Lima - Perú</p>
+        <p><i class="bi bi-telephone"></i> Teléfono: +51 987 654 321</p>
+        <p><i class="bi bi-envelope"></i> Email: tienda@tello.com</p>
+        <p class="small text-secondary">Horario: Lunes a Sábado 9:00am - 7:00pm</p>
+      </div>
+    </div>
+    <div class="text-center pt-3 border-top border-secondary">
+      <small>© 2025 Tienda Tello. Todos los derechos reservados.</small>
+    </div>
+  </div>
+</footer>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/detalle.js"></script>
+
+  <script>
+    const API_URL = 'http://localhost:3000';
+
+    async function getProducto(id) {
+      const res = await fetch(`${API_URL}/productos/${id}`);
+      return res.json();
+    }
+
+    async function getImagenes(productoId) {
+      const res = await fetch(`${API_URL}/imagenes/${productoId}`);
+      return res.json();
+    }
+
+    function joinUrl(base, path) {
+      if (!base.endsWith('/') && !path.startsWith('/')) {
+        return base + '/' + path;
+      } else if (base.endsWith('/') && path.startsWith('/')) {
+        return base + path.slice(1);
+      }
+      return base + path;
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const cont = document.getElementById('detalle-producto');
+
+      if (!id) {
+        cont.innerHTML = '<p class="text-danger">No se especificó un producto.</p>';
+        return;
+      }
+
+      try {
+        const prod = await getProducto(id);
+        const imgs = await getImagenes(id);
+
+        // rating por defecto
+        const rating = prod.rating || 4;
+
+        // Generar slides para el carrusel
+        let slides = "";
+        imgs.forEach((img, i) => {
+          const imgUrl = img.url.startsWith("http") ? img.url : joinUrl(API_URL, img.url);
+          slides += `
+            <div class="carousel-item ${i === 0 ? 'active' : ''}">
+              <img src="${imgUrl}" class="d-block w-100" alt="Imagen ${i+1}">
+            </div>
+          `;
+        });
+
+        // Si no hay imágenes, mostrar placeholder
+        if (imgs.length === 0) {
+          slides = `
+            <div class="carousel-item active">
+              <img src="https://via.placeholder.com/400x300?text=Sin+imagen" class="d-block w-100" alt="Sin imagen">
+            </div>
+          `;
+        }
+
+        // Estrellas HTML
+        let starsHTML = '';
+        for (let i = 1; i <= 5; i++) {
+          starsHTML += `<i class="fa-star ${i <= rating ? 'fas active' : 'far'}" data-value="${i}"></i>`;
+        }
+
+        cont.innerHTML = `
+          <div class="card mx-auto" style="max-width:900px;">
+            <div class="row g-0">
+              <!-- Columna imagen -->
+              <div class="col-md-6">
+                <div id="carouselProducto" class="carousel slide" data-bs-ride="carousel">
+                  <div class="carousel-inner">
+                    ${slides}
+                  </div>
+                  <button class="carousel-control-prev" type="button" data-bs-target="#carouselProducto" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Anterior</span>
+                  </button>
+                  <button class="carousel-control-next" type="button" data-bs-target="#carouselProducto" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Siguiente</span>
+                  </button>
+                </div>
+              </div>
+              <!-- Columna detalle -->
+              <div class="col-md-6 d-flex align-items-center">
+                <div class="card-body">
+                  <h3>${prod.nombre}</h3>
+                  <div class="stars" id="stars-container">${starsHTML}</div>
+                  <p>${prod.descripcion || 'Sin descripción'}</p>
+                  <h4 class="price-tag">S/ ${prod.precio}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // ***** Lógica estrellas interactivas *****
+        const starsContainer = document.getElementById('stars-container');
+        let currentRating = rating;
+
+        starsContainer.addEventListener('mouseover', (e) => {
+          if (e.target.dataset.value) {
+            const val = parseInt(e.target.dataset.value);
+            highlightStars(val);
+          }
+        });
+
+        starsContainer.addEventListener('mouseout', () => {
+          highlightStars(currentRating);
+        });
+
+        starsContainer.addEventListener('click', (e) => {
+          if (e.target.dataset.value) {
+            currentRating = parseInt(e.target.dataset.value);
+            highlightStars(currentRating);
+            console.log("⭐ Nueva calificación:", currentRating);
+
+            // Aquí podrías enviar la calificación al backend con fetch POST
+            // fetch(`${API_URL}/productos/${id}/rating`, { method:'POST', body:JSON.stringify({rating:currentRating}), headers:{'Content-Type':'application/json'} });
+          }
+        });
+
+        function highlightStars(value) {
+          [...starsContainer.children].forEach((star, idx) => {
+            star.classList.remove('fas','far','active');
+            if (idx < value) {
+              star.classList.add('fas','active');
+            } else {
+              star.classList.add('far');
+            }
+          });
+        }
+
+      } catch (error) {
+        console.error("❌ Error al cargar detalle:", error);
+        cont.innerHTML = '<p class="text-danger">Error cargando el producto.</p>';
+      }
+    });
+  </script>
+</body>
+</html>
