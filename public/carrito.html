@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Carrito</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    h2 {
+      color: #343a40;
+      font-weight: 600;
+    }
+    .total-card {
+      background-color: #fff;
+      border: 1px solid #dee2e6;
+      border-radius: .5rem;
+      padding: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" href="index.html">Tienda Tello</a>
+    <a href="index.html" class="btn btn-outline-light btn-sm">← Volver a la tienda</a>
+  </div>
+</nav>
+
+<div class="container my-4">
+  <h2 class="mb-4">🛒 Carrito de Compras</h2>
+
+  <!-- TABLA DEL CARRITO -->
+  <div class="table-responsive">
+    <table class="table table-hover table-striped align-middle shadow-sm">
+      <thead class="table-dark">
+        <tr>
+          <th>Producto</th>
+          <th>Precio</th>
+          <th>Cantidad</th>
+          <th>Total</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="carrito-body"></tbody>
+    </table>
+  </div>
+
+  <!-- TOTAL -->
+  <div class="total-card mt-3">
+    <h4 class="mb-0">Total: <span class="text-success fw-bold">$<span id="total">0</span></span></h4>
+  </div>
+</div>
+
+<footer class="bg-dark text-light mt-5">
+  <div class="container py-3 text-center">
+    <small>© 2025 Tienda Tello. Todos los derechos reservados.</small>
+  </div>
+</footer>
+
+<script>
+  // 🔹 Cargar carrito desde LocalStorage
+  function cargarCarrito() {
+    let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+    const body = document.getElementById('carrito-body');
+    let total = 0;
+    body.innerHTML = '';
+
+    carrito.forEach((item, index) => {
+      const subtotal = item.precio * item.cantidad;
+      total += subtotal;
+      body.innerHTML += `
+        <tr>
+          <td>${item.nombre}</td>
+          <td>$${item.precio}</td>
+          <td>${item.cantidad}</td>
+          <td>$${subtotal}</td>
+          <td>
+            <button class="btn btn-danger btn-sm" onclick="eliminarDelCarrito(${index})">
+              Eliminar
+            </button>
+          </td>
+        </tr>`;
+    });
+
+    document.getElementById('total').textContent = total.toFixed(2);
+  }
+
+  // 🔹 Eliminar un producto del carrito
+  function eliminarDelCarrito(index) {
+    let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+    carrito.splice(index, 1);
+    localStorage.setItem('carrito', JSON.stringify(carrito));
+    cargarCarrito();
+  }
+
+  document.addEventListener('DOMContentLoaded', cargarCarrito);
+</script>
+
+</body>
+</html>
